@@ -26,9 +26,6 @@ function NavBar() {
         <p></p>
         <button className='font-semibold from-neutral-700' onClick={handleTitleClick}>LocaVoiture</button>
         <div>
-          <button className='btn btn-primary px-2 py-1'>
-            <MdOutlineShoppingCart className='w-6 h-6'/>
-          </button>
           <button className='btn btn-primary px-2 py-1' onClick={handleAccountClick}>
             <VscAccount className='w-6 h-6'/>
           </button>
