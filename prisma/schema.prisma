@@ -1,0 +1,65 @@
+// src/prisma/schema.prisma
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Utilisateur {
+  id Int @id @default(autoincrement())
+  nom String
+  prenom String
+  mail String @unique
+  password String
+  pays String
+  ville String
+  rue String
+  CP Int
+  role String @default("Client")
+  date DateTime @default(now())
+  vehicules Vehicule[]
+  reservations Reservation[]
+}
+
+model Vehicule {
+  id Int @id @default(autoincrement())
+  utilisateur_id Int
+  utilisateur Utilisateur @relation(fields: [utilisateur_id], references: [id])
+  marque String
+  modele String
+  couleur String
+  kilometrage Int
+  carburant String
+  photo String
+  date_creation DateTime @default(now())
+  annonces Annonce[]
+}
+
+model Annonce {
+  id Int @id @default(autoincrement())
+  id_vehicule Int
+  vehicule Vehicule @relation(fields: [id_vehicule], references: [id])
+  pays String
+  ville String
+  rue String
+  CP Int
+  date_debut DateTime
+  date_fin DateTime
+  prix Float
+  status String @default("Active")
+  date_creation DateTime @default(now())
+  reservations Reservation[]
+}
+
+model Reservation {
+  id Int @id @default(autoincrement())
+  id_utilisateur Int
+  utilisateur Utilisateur @relation(fields: [id_utilisateur], references: [id])
+  id_annonce Int
+  annonce Annonce @relation(fields: [id_annonce], references: [id])
+  status String @default("En attente")
+  date_creation DateTime @default(now())
+}
