@@ -9,6 +9,7 @@ const bodyParser = require('body-parser');
 // Importation des routes
 const authRoutes = require('./src/routes/Auth');
 const userRoutes = require('./src/routes/User');
+const vehiculeRoutes = require('./src/routes/Vehicule')
 
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }))
@@ -17,6 +18,7 @@ app.use(cors())
 // Routes
 app.use('/auth', authRoutes);
 app.use('/api', userRoutes);
+app.use('/api', vehiculeRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log('Serveur démarré sur le port', process.env.PORT);
