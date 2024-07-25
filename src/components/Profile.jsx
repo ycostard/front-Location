@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
-import VoitureImg from "../assets/voiture.jpg";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
@@ -32,6 +31,14 @@ function Profile() {
     date_fin: "",
     prix: "",
   });
+  const [file, setFile] = useState(null);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFile(file);
+    }
+};
 
   useEffect(() => {
     setUsername(
@@ -130,31 +137,28 @@ function Profile() {
 
   const handleAddVehicle = () => {
     const newId = vehicules.length ? vehicules[vehicules.length - 1].id + 1 : 1;
-    const vehicle = {
-      id: newId,
-      ...newVehicule,
-      image: newVehicule.image || VoitureImg,
-    };
+     // Créez une instance de FormData
+    const formData = new FormData();
+    formData.append("marque", newVehicule.marque);
+    formData.append("modele", newVehicule.modele);
+    formData.append("couleur", newVehicule.couleur);
+    formData.append("kilometrage", newVehicule.kilometrage);
+    formData.append("carburant", newVehicule.carburant);
+    if (file) {
+      formData.append("photo", file);
+    }
 
     const token = localStorage.getItem("token");
 
-    let array = {
-      marque: vehicle.marque,
-      modele: vehicle.modele,
-      couleur: vehicle.couleur,
-      kilometrage: vehicle.kilometrage,
-      carburant: vehicle.carburant,
-      photo: vehicle.image,
-    };
-
     axios
-      .post("http://localhost:3001/api/vehicules", array, {
+      .post("http://localhost:3001/api/vehicules", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((res) => {
-        setVehicules([...vehicules, vehicle]);
+        console.log(res)
+        setVehicules([...vehicules, { ...newVehicule, id: newId, photo: res.data.photo }]);
         Swal.fire("Ajouté !", "Le véhicule a été ajouté.", "success");
       });
 
@@ -263,7 +267,11 @@ function Profile() {
             >
               Ajouter un véhicule
             </button>
+            
           </div>
+          {vehicules.length === 0 ? (
+            <p>Aucun véhicule à afficher pour le moment.</p>
+          ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {vehicules.map((vehicle) => (
               <div
@@ -271,13 +279,11 @@ function Profile() {
                 className="card card-compact w-full bg-base-100 shadow-xl rounded-2xl pb-3"
               >
                 <div className="card-body">
-                  <figure>
+                  <figure className="relative">
                     <img
-                      src={VoitureImg}
+                      src={"http://localhost:3001/api/images/" + vehicle.photo}
                       alt={vehicle.modele}
-                      width={384}
-                      height={140}
-                      className="rounded-t-2xl"
+                      className="w-full h-40 object-cover rounded-t-2xl"
                     />
                   </figure>
                   <div className="mx-3">
@@ -300,6 +306,7 @@ function Profile() {
               </div>
             ))}
           </div>
+          )}
         </div>
       )}
 
@@ -350,6 +357,12 @@ function Profile() {
         <div className="">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-xl mb-2">Vos réservations</h3>
+            <button
+              className="btn btn-primary bg-blue-500 rounded-md p-2 text-white"
+              onClick={() => navigate("/")}
+            >
+              Réserver une voiture
+            </button>
           </div>
           <p>Aucune réservation à afficher pour le moment.</p>
         </div>
@@ -433,10 +446,9 @@ function Profile() {
               <div className="mb-4">
                 <label className="block mb-2">Image (URL)</label>
                 <input
-                  type="text"
+                  type="file"
                   name="image"
-                  value={newVehicule.image}
-                  onChange={handleInputChange}
+                  onChange={handleFileChange} // Ajoutez un gestionnaire de changement pour les fichiers
                   className="w-full p-2 border border-gray-300 rounded"
                 />
               </div>
