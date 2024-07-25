@@ -1,22 +1,19 @@
-import { useState } from 'react'
+import React from 'react';
 
-function Pagination() {
-  const [activeButton, setActiveButton] = useState(1); // Initialise avec le bouton 1 actif
-
-  // Fonction pour gérer le clic sur un bouton
+function Pagination({ currentPage, handlePageChange, totalPages }) {
   const handleClick = (number) => {
-    setActiveButton(number);
+    handlePageChange(number);
   };
 
   return (
     <div className='text-center mt-16'>
-      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((number) => (
+      {[...Array(totalPages).keys()].map((number) => (
         <button
-          key={number}
-          onClick={() => handleClick(number)}
-          className={`btn btn-primary px-2 py-1 ${activeButton === number ? 'bg-blue-500' : 'bg-gray-300'} text-white ${number === 1 ? 'rounded-l-md' : ''} ${number === 10 ? 'rounded-r-md' : ''}`}
+          key={number + 1}
+          onClick={() => handleClick(number + 1)}
+          className={`btn btn-primary px-2 py-1 ${currentPage === number + 1 ? 'bg-blue-500' : 'bg-gray-300'} text-white ${number === 0 ? 'rounded-l-md' : ''} ${number === totalPages - 1 ? 'rounded-r-md' : ''}`}
         >
-          {number}
+          {number + 1}
         </button>
       ))}
     </div>
