@@ -75,6 +75,7 @@ function Produit({ annonce }) {
           />
         </figure>
         <div className="mx-3">
+          <p className="my-2">{annonce.vehicule.marque} {annonce.vehicule.modele} {annonce.vehicule.couleur}</p>
           <p className="my-2">{annonce.ville}, {annonce.rue}</p>
           <p className="my-2">{annonce.CP} - {annonce.pays}</p>
           <p className="my-2">Prix: {annonce.prix}€/jour</p>

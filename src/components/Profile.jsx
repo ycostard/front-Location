@@ -3,6 +3,8 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
+import moment from "moment";
+import "moment/locale/fr";
 
 function Profile() {
   const navigate = useNavigate();
@@ -32,13 +34,14 @@ function Profile() {
     prix: "",
   });
   const [file, setFile] = useState(null);
+  const [deletingAnnonceId, setDeletingAnnonceId] = useState(null);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setFile(file);
     }
-};
+  };
 
   useEffect(() => {
     setUsername(
@@ -98,6 +101,7 @@ function Profile() {
   };
 
   const handleDeleteAnnonce = (id) => {
+    setDeletingAnnonceId(id);
     Swal.fire({
       title: "Êtes-vous sûr ?",
       text: "Vous ne pourrez pas revenir en arrière !",
@@ -119,8 +123,16 @@ function Profile() {
           })
           .then((res) => {
             setAnnonces(annonces.filter((annonce) => annonce.id !== id));
-            Swal.fire("Supprimé !", "L'annonce a été supprimée.", "success");
+            setDeletingAnnonceId(null);
+          })
+          .catch((err) => {
+            setDeletingAnnonceId(null);
+          })
+          .finally(() => {
+            setDeletingAnnonceId(null);
           });
+      } else {
+        setDeletingAnnonceId(null);
       }
     });
   };
@@ -137,7 +149,7 @@ function Profile() {
 
   const handleAddVehicle = () => {
     const newId = vehicules.length ? vehicules[vehicules.length - 1].id + 1 : 1;
-     // Créez une instance de FormData
+    // Créez une instance de FormData
     const formData = new FormData();
     formData.append("marque", newVehicule.marque);
     formData.append("modele", newVehicule.modele);
@@ -157,8 +169,11 @@ function Profile() {
         },
       })
       .then((res) => {
-        console.log(res)
-        setVehicules([...vehicules, { ...newVehicule, id: newId, photo: res.data.photo }]);
+        console.log(res);
+        setVehicules([
+          ...vehicules,
+          { ...newVehicule, id: newId, photo: res.data.photo },
+        ]);
         Swal.fire("Ajouté !", "Le véhicule a été ajouté.", "success");
       });
 
@@ -267,45 +282,46 @@ function Profile() {
             >
               Ajouter un véhicule
             </button>
-            
           </div>
           {vehicules.length === 0 ? (
             <p>Aucun véhicule à afficher pour le moment.</p>
           ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {vehicules.map((vehicle) => (
-              <div
-                key={vehicle.id}
-                className="card card-compact w-full bg-base-100 shadow-xl rounded-2xl pb-3"
-              >
-                <div className="card-body">
-                  <figure className="relative">
-                    <img
-                      src={"http://localhost:3001/api/images/" + vehicle.photo}
-                      alt={vehicle.modele}
-                      className="w-full h-40 object-cover rounded-t-2xl"
-                    />
-                  </figure>
-                  <div className="mx-3">
-                    <p className="my-2">
-                      {vehicle.marque} {vehicle.modele} {vehicle.couleur}
-                    </p>
-                    <p className="my-2">
-                      {vehicle.kilometrage} km - {vehicle.carburant}
-                    </p>
-                    <div className="flex space-x-2 items-center justify-end">
-                      <button
-                        onClick={() => handleDeleteVehicle(vehicle.id)}
-                        className="btn btn-primary p-1 bg-red-700 rounded-md text-white"
-                      >
-                        Supprimer
-                      </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {vehicules.map((vehicle) => (
+                <div
+                  key={vehicle.id}
+                  className="card card-compact w-full bg-base-100 shadow-xl rounded-2xl pb-3"
+                >
+                  <div className="card-body">
+                    <figure className="relative">
+                      <img
+                        src={
+                          "http://localhost:3001/api/images/" + vehicle.photo
+                        }
+                        alt={vehicle.modele}
+                        className="w-full h-40 object-cover rounded-t-2xl"
+                      />
+                    </figure>
+                    <div className="mx-3">
+                      <p className="my-2">
+                        {vehicle.marque} {vehicle.modele} {vehicle.couleur}
+                      </p>
+                      <p className="my-2">
+                        {vehicle.kilometrage} km - {vehicle.carburant}
+                      </p>
+                      <div className="flex space-x-2 items-center justify-end">
+                        <button
+                          onClick={() => handleDeleteVehicle(vehicle.id)}
+                          className="btn btn-primary p-1 bg-red-700 rounded-md text-white"
+                        >
+                          Supprimer
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
           )}
         </div>
       )}
@@ -331,20 +347,67 @@ function Profile() {
                   className="card card-compact w-full bg-base-100 shadow-xl rounded-2xl pb-3"
                 >
                   <div className="card-body">
-                    <p>
-                      {annonce.pays} - {annonce.ville} - {annonce.rue}
-                    </p>
-                    <p>CP: {annonce.CP}</p>
-                    <p>
-                      Début: {new Date(annonce.date_debut).toLocaleDateString()}
-                    </p>
-                    <p>
-                      Fin: {new Date(annonce.date_fin).toLocaleDateString()}
-                    </p>
-                    <p>Prix: {annonce.prix} €</p>
-                      <button className="btn btn-primary p-1 bg-red-700 rounded-md text-white" onClick={() => handleDeleteAnnonce(annonce.id)}>
-                        Supprimer
-                      </button>
+                    <figure className="relative">
+                      <img
+                        src={`http://localhost:3001/api/images/${annonce.vehicule.photo}`}
+                        alt="voiture"
+                        className="w-full h-40 object-cover rounded-t-2xl"
+                      />
+                    </figure>
+                    <div className="mx-3">
+                      <p className="my-2">
+                        {annonce.vehicule.marque} {annonce.vehicule.modele}{" "}
+                        {annonce.vehicule.couleur}
+                      </p>
+                      <p className="my-2">
+                        {annonce.ville}, {annonce.rue}
+                      </p>
+                      <p className="my-2">
+                        {annonce.CP} - {annonce.pays}
+                      </p>
+                      <p className="my-2">Prix: {annonce.prix}€/jour</p>
+                      <p className="my-2">
+                        Dates:{" "}
+                        {new Date(annonce.date_debut).toLocaleDateString()} -{" "}
+                        {new Date(annonce.date_fin).toLocaleDateString()}
+                      </p>
+                      <p className="my-2">
+                        Mise en ligne il y a :{" "}
+                        {moment(annonce.date_creation).fromNow()}
+                      </p>
+                      <hr className="my-2" />
+                      {annonce.reservations.length === 0 ? (
+                        <p>Aucune réservation pour cette annonce.</p>
+                      ) : (
+                      <div className="flex flex-col space-y-2 items-center justify-end">  
+                        <p className="my-2">Réservations :</p>
+                        {annonce.reservations.map((reservation) => (
+                          <div key={reservation.id} className="flex space-x-2 items-center justify-end">
+                            <p className="my-2 text-sm">
+                              {reservation.utilisateur.prenom} {reservation.utilisateur.nom}
+                              <button className="btn btn-primary p-1 bg-blue-700 rounded-md mx-1 text-white">
+                                Accepter
+                              </button>
+                              <button className="btn btn-primary p-1 bg-red-700 rounded-md ml-1 text-white">
+                                Décliner
+                              </button>
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                      )}
+                      <div className="flex flex-col space-y-2 items-center justify-end">
+                        <button
+                           onClick={() => handleDeleteAnnonce(annonce.id)}
+                          className="btn btn-primary p-1 bg-red-700 rounded-md text-white"
+                          disabled={deletingAnnonceId === annonce.id} // Désactiver le bouton pendant la réservation
+                        >
+                          {deletingAnnonceId === annonce.id
+                            ? "Suppression en cours..."
+                            : "Supprimer"}
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
